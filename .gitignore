@@ -1,0 +1,5 @@
+# 不上传的文件：本地缓存和编辑器配置
+supabase/.temp/
+supabase/.branches/
+.vscode/
+*.log

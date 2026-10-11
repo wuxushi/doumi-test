@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 手机上看不会缩得太小，viewport 是移动端网页的标准配置 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>豆米小站 · 记录豆米的成长</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <!-- ===== 顶部导航栏 ===== -->
+    <header class="header">
+      <h1>🐕 豆米小站</h1>
+      <p class="subtitle">记录豆米成长的每一个瞬间</p>
+      <!-- 第三期会在这里加「登录/注册」按钮 -->
+    </header>
+
+    <!-- 云端状态提示条：显示连接情况，文字由 JS 控制 -->
+    <div class="status-bar hidden" id="status-bar"></div>
+
+    <!-- ===== 板块一：分离焦虑训练 ===== -->
+    <div class="module-header">
+      <span class="module-tag">板块 01</span>
+      <h2>🦴 分离焦虑训练</h2>
+      <p class="module-desc">每天 4~6 次短训练，帮豆米慢慢习惯独处</p>
+    </div>
+
+    <!-- ===== 训练计时器区域 ===== -->
+    <section class="timer-card">
+      <!-- 大号计时显示，格式为 MM:SS（超过1小时是 H:MM:SS） -->
+      <div class="timer-display" id="timer-display">00:00</div>
+
+      <p class="timer-hint">
+        点「开始」后离开豆米身边 → 它一直安静，回来点「暂停」保存并奖励它<br>
+        它中途叫了 → 点「重置」，这次不算
+      </p>
+
+      <div class="timer-buttons">
+        <!-- 主按钮：空闲时显示「开始」，计时中变成「暂停」 -->
+        <button id="btn-start" class="btn btn-main">开始</button>
+        <!-- 重置按钮：只在计时中才显示 -->
+        <button id="btn-reset" class="btn btn-reset hidden">重置</button>
+      </div>
+    </section>
+
+    <!-- ===== 今日统计卡片 ===== -->
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-total">0 秒</div>
+        <div class="stat-label">今日总安静时长</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-count">0 次</div>
+        <div class="stat-label">今日训练次数</div>
+      </div>
+    </section>
+
+    <!-- ===== 最近训练记录列表：按天分组，点日期展开当天明细 ===== -->
+    <section class="records-card">
+      <div class="records-head">
+        <h2>最近训练记录</h2>
+        <!-- 第五期：把记录整理成报告复制出去，可发给对象/兽医/任何 AI -->
+        <button id="btn-copy-report" class="btn-mini">📋 复制豆米信息</button>
+      </div>
+      <ul id="record-list"></ul>
+    </section>
+
+    <!-- ===== AI 训练分析（第五期）：后端部署后自动激活 ===== -->
+    <section class="ai-card">
+      <h2>🤖 AI 训练分析</h2>
+      <p class="ai-desc">让 AI 看看豆米最近 7 天的训练数据，说说趋势和建议</p>
+      <button id="btn-ai-analyze" class="btn btn-main btn-ai">分析一下</button>
+      <div class="ai-result hidden" id="ai-result">
+        <p class="ai-result-text" id="ai-result-text"></p>
+        <p class="ai-meta" id="ai-meta"></p>
+      </div>
+    </section>
+
+    <!-- ===== 板块二：驱虫记录（施工中占位） ===== -->
+    <div class="module-header">
+      <span class="module-tag">板块 02</span>
+      <h2>💊 驱虫记录</h2>
+      <p class="module-desc">记好每一次体内外驱虫的时间</p>
+    </div>
+    <div class="coming-card">🚧 施工中，分离焦虑训练做完就轮到它</div>
+
+    <!-- ===== 板块三：规划中占位 ===== -->
+    <div class="module-header">
+      <span class="module-tag">板块 03</span>
+      <h2>✨ 更多板块</h2>
+      <p class="module-desc">疫苗记录、体检记录、体重曲线…</p>
+    </div>
+    <div class="coming-card">想法收集中，随时告诉我你想记什么</div>
+
+    <!-- ===== 页脚 ===== -->
+    <footer class="footer">
+      豆米小站 · 用爱记录豆米的每一次成长
+    </footer>
+  </div>
+
+  <!-- ===== 奖励提醒弹窗（默认隐藏，暂停保存时弹出） ===== -->
+  <div class="modal-overlay" id="reward-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">🎉</div>
+      <p class="modal-text" id="modal-text"></p>
+      <button id="btn-close-modal" class="btn btn-main">好的，这就去奖励！</button>
+    </div>
+  </div>
+
+  <!-- ===== 登录 / 注册弹窗（第三期） ===== -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">🔑</div>
+      <p class="modal-title">登录 / 注册</p>
+      <p class="auth-desc">注册后数据跟着账号走，换设备也能看到记录</p>
+      <input type="email" id="auth-email" class="input" placeholder="邮箱" />
+      <input type="password" id="auth-password" class="input" placeholder="密码（至少 6 位）" />
+      <p class="auth-error" id="auth-error"></p>
+      <div class="auth-buttons">
+        <button id="btn-do-register" class="btn btn-main">注册</button>
+        <button id="btn-do-login" class="btn btn-reset">登录</button>
+      </div>
+      <button id="btn-forgot" class="btn-link">忘记密码？</button>
+      <button id="btn-close-auth" class="btn-link">先不用，继续当游客</button>
+    </div>
+  </div>
+
+  <!-- ===== 忘记密码弹窗（填邮箱发重置邮件） ===== -->
+  <div class="modal-overlay" id="forgot-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">📮</div>
+      <p class="modal-title">找回密码</p>
+      <p class="auth-desc">填注册时的邮箱，我们会发一封「重置密码」邮件</p>
+      <input type="email" id="forgot-email" class="input" placeholder="注册邮箱" />
+      <p class="auth-error" id="forgot-status"></p>
+      <div class="auth-buttons">
+        <button id="btn-send-reset" class="btn btn-main">发送重置邮件</button>
+      </div>
+      <button id="btn-back-login" class="btn-link">返回登录</button>
+    </div>
+  </div>
+
+  <!-- ===== 设置新密码弹窗（点过邮件里的重置链接后自动弹出） ===== -->
+  <div class="modal-overlay" id="newpass-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">🔐</div>
+      <p class="modal-title">设置新密码</p>
+      <p class="auth-desc">邮件链接验证通过，请设置一个新密码</p>
+      <input type="password" id="newpass-input" class="input" placeholder="新密码（至少 6 位）" />
+      <p class="auth-error" id="newpass-status"></p>
+      <div class="auth-buttons">
+        <button id="btn-save-newpass" class="btn btn-main">保存新密码</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 复制豆米报告弹窗（第五期）：选范围 → 整理成报告复制出去 ===== -->
+  <div class="modal-overlay" id="copy-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">📋</div>
+      <p class="modal-title">复制豆米报告</p>
+      <p class="auth-desc">把训练记录整理成一段文字，可以发给兽医、对象，或粘贴给任何 AI 帮你分析</p>
+      <div class="copy-options">
+        <label><input type="radio" name="copy-range" value="1" /> 最近 1 天</label>
+        <label><input type="radio" name="copy-range" value="3" /> 最近 3 天</label>
+        <label><input type="radio" name="copy-range" value="7" checked /> 最近 7 天</label>
+      </div>
+      <!-- 自选范围：默认值由 JS 自动填（最早记录日 ~ 今天），选它才解锁 -->
+      <label class="copy-custom">
+        <input type="radio" name="copy-range" value="custom" />
+        自选
+        <input type="date" id="copy-start" class="input-date" disabled />
+        到
+        <input type="date" id="copy-end" class="input-date" disabled />
+      </label>
+      <p class="auth-error" id="copy-status"></p>
+      <div class="auth-buttons">
+        <button id="btn-do-copy" class="btn btn-main">📋 复制</button>
+        <button id="btn-do-ai" class="btn btn-main">🤖 AI 分析</button>
+      </div>
+      <button id="btn-close-copy" class="btn-link">取消</button>
+    </div>
+  </div>
+
+  <!-- Supabase 官方网页版库：CDN 引入，不用安装任何东西 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- 我们自己的文件，顺序不能乱：配置 → 云端逻辑 → 界面逻辑 -->
+  <script src="config.js"></script>
+  <script src="cloud.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

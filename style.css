@@ -1,0 +1,537 @@
+/* ==========================================================
+   豆米小站 · 样式表
+   配色思路：暖色纸感背景 + 活泼橙色按钮，适合宠物主题
+   ========================================================== */
+
+/* ---------- 基础设置 ---------- */
+* {
+  box-sizing: border-box; /* 让宽度计算包含内边距，排版不容易乱 */
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif; /* 优先用手机系统字体，加载快 */
+  background: #faf6f1; /* 暖色纸感背景 */
+  color: #3b3128;      /* 深棕文字，比纯黑柔和 */
+  line-height: 1.6;
+}
+
+/* 内容容器：限制最大宽度并居中，手机和电脑上都好看 */
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ---------- 顶部导航栏 ---------- */
+.header {
+  text-align: center;
+  padding: 16px 0 8px;
+}
+
+.header h1 {
+  font-size: 26px;
+}
+
+.subtitle {
+  color: #9a8b7a; /* 浅棕灰色，做辅助说明 */
+  font-size: 14px;
+}
+
+/* ---------- 通用卡片 ---------- */
+.timer-card,
+.records-card,
+.stat-card {
+  background: #ffffff;
+  border-radius: 16px;        /* 大圆角显得友好 */
+  box-shadow: 0 2px 10px rgba(59, 49, 40, 0.06); /* 轻轻的阴影 */
+  margin-top: 16px;
+}
+
+/* ---------- 计时器区域 ---------- */
+.timer-card {
+  text-align: center;
+  padding: 28px 20px;
+}
+
+/* 大号计时数字 */
+.timer-display {
+  font-size: 60px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* 数字等宽，跳动时不会左右晃 */
+  letter-spacing: 2px;
+}
+
+.timer-hint {
+  font-size: 13px;
+  color: #9a8b7a;
+  margin: 12px 0 20px;
+}
+
+/* 按钮区域：横向排列 */
+.timer-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  border: none;
+  border-radius: 999px; /* 圆角拉满 = 胶囊按钮 */
+  padding: 14px 32px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.96); /* 按下去轻微缩小，给手指反馈 */
+}
+
+/* 主按钮（开始/暂停）：橙色 */
+.btn-main {
+  background: #e8833a;
+  color: #ffffff;
+  min-width: 128px;
+  box-shadow: 0 4px 12px rgba(232, 131, 58, 0.35);
+}
+
+/* 计时中主按钮变绿（暂停=完成了一次训练，绿色更贴切） */
+.btn-main.pausing {
+  background: #2f9e44;
+  box-shadow: 0 4px 12px rgba(47, 158, 68, 0.35);
+}
+
+/* 重置按钮：白底描边 */
+.btn-reset {
+  background: #ffffff;
+  color: #b3552e;
+  border: 2px solid #e8c4a8;
+}
+
+/* hidden 类：加在任何元素上都能藏起来 */
+.hidden {
+  display: none !important;
+}
+
+/* ---------- 今日统计 ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 两列等宽 */
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.stat-card {
+  margin-top: 0; /* 已由上面的 .stats 控制间距 */
+  text-align: center;
+  padding: 18px 8px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e8833a;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #9a8b7a;
+}
+
+/* ---------- 记录列表：按天分组，点日期展开明细 ---------- */
+.records-card {
+  padding: 18px 20px;
+}
+
+.records-card h2 {
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+
+.records-card ul {
+  list-style: none;
+}
+
+/* 每一天一个组；组与组之间用分隔线（最后一组不要） */
+.records-card li.record-group {
+  display: block;          /* 覆盖下面 li 的 flex，组内要竖排 */
+  border-bottom: 1px solid #f3ece4;
+}
+
+.records-card li.record-group:last-child {
+  border-bottom: none;
+}
+
+/* 组头行：左边日期、右边摘要和箭头，整行可点击 */
+.record-day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;       /* 连续点选时别选中文字 */
+}
+
+.day-label {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* 摘要靠右：当天总共安静多久、练了几次 */
+.day-summary {
+  margin-left: auto;
+  font-size: 13px;
+  color: #9a8b7a;
+}
+
+.day-arrow {
+  font-size: 12px;
+  color: #b7a998;
+  transition: transform 0.2s;
+}
+
+/* 展开时箭头转成朝上 */
+.record-group.open .day-arrow {
+  transform: rotate(180deg);
+}
+
+/* 当天的明细列表：默认收起，展开才显示 */
+.day-details {
+  display: none;
+  padding: 0 0 8px 12px;   /* 比组头缩进一点，看出层级 */
+}
+
+.record-group.open .day-details {
+  display: block;
+}
+
+.day-details li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #6b5d4f;
+}
+
+/* 明细里最后一条不用分隔线（分隔线由组承担） */
+.day-details li:last-child {
+  border-bottom: none;
+}
+
+.records-card li {
+  padding: 10px 0;
+  border-bottom: 1px solid #f3ece4; /* 淡淡的分隔线 */
+  font-size: 15px;
+}
+
+.record-duration {
+  color: #2f9e44;
+  font-weight: 600;
+}
+
+.empty {
+  color: #b7a998;
+  justify-content: center; /* 空状态文字居中 */
+}
+
+/* ---------- 记录卡片头（标题 + 复制按钮，第五期） ---------- */
+.records-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 标题左、复制按钮右 */
+  margin-bottom: 10px;
+}
+
+.records-head h2 {
+  margin-bottom: 0; /* 间距交给 .records-head 管 */
+}
+
+/* 小圆角按钮（复制豆米信息） */
+.btn-mini {
+  border: none;
+  background: #fdeadd;
+  color: #b3552e;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.btn-mini:active {
+  transform: scale(0.95);
+}
+
+/* 复制弹窗里的范围单选：横排三个选项 */
+.copy-options {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.copy-options label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* 自选范围行：单选 + 两个日期框挤一行 */
+.copy-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+/* 小日期输入框 */
+.input-date {
+  width: 108px;
+  border: 1px solid #e8c4a8;
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #3b3128;
+  background: #ffffff;
+}
+
+/* 没选「自选」时灰掉，表示点不了 */
+.input-date:disabled {
+  background: #f3ece4;
+  color: #b7a998;
+}
+
+.input-date:focus {
+  outline: none;
+  border-color: #e8833a;
+}
+
+/* ---------- AI 分析卡片（第五期） ---------- */
+.ai-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(59, 49, 40, 0.06);
+  margin-top: 16px;
+  padding: 18px 20px;
+}
+
+.ai-card h2 {
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.ai-desc {
+  font-size: 13px;
+  color: #9a8b7a;
+  margin-bottom: 14px;
+}
+
+/* 分析按钮占满一行；分析中变灰不可点 */
+.btn-ai {
+  width: 100%;
+  font-size: 16px;
+}
+
+.btn-ai:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 结果框：浅米色底，和整体纸感一致 */
+.ai-result {
+  margin-top: 14px;
+  background: #fdf6ee;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: left;
+}
+
+.ai-result-text {
+  font-size: 15px;
+  white-space: pre-wrap; /* 保留 AI 回答里的换行 */
+}
+
+.ai-meta {
+  font-size: 12px;
+  color: #b7a998;
+  margin-top: 8px;
+  text-align: right;
+}
+
+.ai-meta:empty {
+  display: none; /* 没有标注时间就不占行 */
+}
+
+/* ---------- 奖励提醒弹窗 ---------- */
+.modal-overlay {
+  display: none; /* 默认隐藏 */
+  position: fixed;
+  inset: 0; /* 铺满整个屏幕 */
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* 加上 .show 类就显示（由 JS 控制） */
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal-box {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 340px;
+  width: 100%;
+}
+
+.modal-emoji {
+  font-size: 48px;
+}
+
+.modal-text {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 12px 0 20px;
+}
+
+/* ---------- 云端状态提示条 ---------- */
+.status-bar {
+  background: #fdf3d8;      /* 淡黄底，提示但不吓人 */
+  color: #8a6d1a;
+  border-radius: 12px;
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 12px;
+  margin-top: 12px;
+}
+
+/* ---------- 板块标题（主站的每个板块共用这套样式） ---------- */
+.module-header {
+  margin-top: 28px;
+  padding: 0 4px;
+}
+
+/* 「板块 01」这种小标签 */
+.module-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e8833a;
+  background: #fdeadd;        /* 淡橙色底 */
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin-bottom: 6px;
+}
+
+.module-header h2 {
+  font-size: 20px;
+}
+
+.module-desc {
+  font-size: 13px;
+  color: #9a8b7a;
+}
+
+/* 施工中板块的占位卡片：虚线边框 = 还没建好 */
+.coming-card {
+  background: #ffffff;
+  border: 2px dashed #e8c4a8;
+  border-radius: 16px;
+  text-align: center;
+  color: #b7a998;
+  font-size: 14px;
+  padding: 28px 16px;
+  margin-top: 16px;
+}
+
+/* ---------- 页脚 ---------- */
+.footer {
+  text-align: center;
+  color: #b7a998;
+  font-size: 13px;
+  padding: 24px 0 12px;
+}
+
+/* ---------- 登录 / 注册弹窗（第三期） ---------- */
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.auth-desc {
+  font-size: 13px;
+  color: #9a8b7a;
+  margin: 6px 0 16px;
+}
+
+/* 输入框 */
+.input {
+  width: 100%;
+  border: 2px solid #e8c4a8;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #e8833a;
+}
+
+.auth-error {
+  color: #c0392b;
+  font-size: 13px;
+  min-height: 18px;   /* 没报错也占一行，弹窗不会上下跳动 */
+  margin-bottom: 8px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-buttons .btn {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 16px;
+}
+
+/* 纯文字小按钮（如「先不用，继续当游客」） */
+.btn-link {
+  background: none;
+  border: none;
+  color: #b7a998;
+  font-size: 13px;
+  margin-top: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 状态条里的链接（登录/注册、退出） */
+.status-bar a {
+  color: #b3552e;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* 提示成功时改用绿色（如「邮件已发出」） */
+.auth-success {
+  color: #2f9e44 !important;
+}
