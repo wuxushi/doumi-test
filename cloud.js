@@ -71,6 +71,61 @@ async function deleteRecordFromCloud(id) {
   if (error) throw error;
 }
 
+/* ---------- 健康手册（第七期新增） ---------- */
+
+// 拉取健康记录（驱虫+疫苗），按日期新的在前；同一天的按先记的在后
+async function fetchHealthRecords() {
+  const { data, error } = await db
+    .from("health_records")
+    .select("*")
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(200); // 低频记录，200 条够用很多年
+
+  if (error) throw error;
+  return data.map(rowToHealthRecord);
+}
+
+// 存一条健康记录到云端，成功后返回这条记录的编号（id）
+async function saveHealthRecordToCloud(record) {
+  const { data, error } = await db
+    .from("health_records")
+    .insert({
+      user_id: currentUserId,   // 这条记录是谁的
+      type: record.type,        // deworm=驱虫 / vaccine=疫苗
+      name: record.name,        // 做了什么
+      date: record.date,        // 哪天做的（YYYY-MM-DD 字符串）
+      note: record.note,        // 备注
+      next_date: record.nextDate || null, // 下次预约日期，没填是 null
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+// 从云端删除一条健康记录
+async function deleteHealthRecordFromCloud(id) {
+  const { error } = await db
+    .from("health_records")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
+// 预约完成：日期改成实际完成日，并清空「下次预约日期」
+// 这条记录就从「预约」自然变成了一条「已做记录」
+async function completeHealthBooking(id, doneDate) {
+  const { error } = await db
+    .from("health_records")
+    .update({ date: doneDate, next_date: null })
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
 /* ---------- 小工具函数 ---------- */
 
 // 把云端返回的一行数据，转换成页面用的格式（列名 → 好懂的驼峰名）
@@ -80,6 +135,18 @@ function rowToRecord(row) {
     startTime: new Date(row.start_time),
     endTime: new Date(row.end_time),
     durationSeconds: row.duration_seconds,
+  };
+}
+
+// 把云端返回的一行健康记录，转换成页面用的格式（date 本来就是 YYYY-MM-DD 字符串，直接用）
+function rowToHealthRecord(row) {
+  return {
+    id: row.id,
+    type: row.type,     // deworm=驱虫 / vaccine=疫苗
+    name: row.name,     // 做了什么
+    date: row.date,     // 哪天做的
+    note: row.note,     // 备注
+    nextDate: row.next_date, // 下次预约日期，没填是 null（第九期预约用）
   };
 }
 

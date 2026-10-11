@@ -480,13 +480,14 @@ body {
   margin: 6px 0 16px;
 }
 
-/* 输入框 */
+/* 输入框（文本框和备注框共用；font-family 让备注框也用系统字体，不然会变等宽字体） */
 .input {
   width: 100%;
   border: 2px solid #e8c4a8;
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 15px;
+  font-family: inherit;
   margin-bottom: 10px;
 }
 
@@ -534,4 +535,342 @@ body {
 /* 提示成功时改用绿色（如「邮件已发出」） */
 .auth-success {
   color: #2f9e44 !important;
+}
+
+/* ---------- 健康手册（第七期） ---------- */
+
+/* 健康记录卡片：和训练记录卡片同款外观 */
+.health-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(59, 49, 40, 0.06);
+  margin-top: 16px;
+  padding: 18px 20px;
+}
+
+.health-card h2 {
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+
+.health-card ul {
+  list-style: none;
+}
+
+/* 每条记录：底部淡淡分隔线，最后一条不要 */
+.health-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f3ece4;
+}
+
+.health-item:last-child {
+  border-bottom: none;
+}
+
+/* 一行里排：徽章、名称、日期、删除按钮 */
+.health-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 类型徽章：驱虫绿、疫苗蓝，一眼区分 */
+.health-badge {
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap; /* 徽章文字不换行 */
+}
+
+.health-badge.deworm {
+  background: #e3f3e5;
+  color: #22742f;
+}
+
+.health-badge.vaccine {
+  background: #e3edf8;
+  color: #2a5d9c;
+}
+
+/* 名称占中间：太长就截断出省略号，不把日期挤出去 */
+.health-name {
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.health-date {
+  margin-left: auto; /* 日期推到最右 */
+  font-size: 13px;
+  color: #9a8b7a;
+  white-space: nowrap;
+}
+
+/* 删除小按钮：平时浅浅的，按下有反馈（健康手册和训练明细共用） */
+.health-del,
+.record-del {
+  border: none;
+  background: none;
+  color: #d8b7a5;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.health-del:active,
+.record-del:active {
+  transform: scale(0.9);
+}
+
+/* 备注第二行：比名称小一号的说明文字 */
+.health-note {
+  font-size: 13px;
+  color: #6b5d4f;
+  margin-top: 2px;
+  white-space: pre-wrap;      /* 保留备注里自己敲的换行 */
+  word-break: break-word;     /* 长串字符也能断行 */
+}
+
+/* 弹窗里的类型胶囊：两个选项横排 */
+.health-type-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* 藏掉原生单选圆点，用文字胶囊代替 */
+.health-type-row input {
+  display: none;
+}
+
+.health-type-row span {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #e8c4a8;
+  border-radius: 999px;
+  padding: 6px 18px;
+  cursor: pointer;
+  color: #9a8b7a;
+}
+
+/* 选中那个胶囊高亮（+:input 后面紧跟的 span） */
+.health-type-row input:checked + span {
+  background: #fdeadd;
+  border-color: #e8833a;
+  color: #b3552e;
+}
+
+/* 记录卡头部右侧的按钮组：预约 + 记一笔并排 */
+.head-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 弹窗里输入框上方的小标签（区分「哪天做的」和「下次预约」两个日期框） */
+.field-label {
+  font-size: 12px;
+  color: #9a8b7a;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+/* ---------- 首页预约提醒条（第九期） ---------- */
+
+/* 醒目但不扎眼：淡橙底 + 橙色左边框，挂在标题正下方 */
+.booking-bar {
+  background: #fdeadd;
+  border-left: 4px solid #e8833a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 12px;
+}
+
+.booking-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #b3552e;
+  margin-bottom: 6px;
+}
+
+/* 每条预约：左边 emoji + 名称，右边日期和倒计时；整行可点 */
+.booking-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.booking-days {
+  font-size: 13px;
+  color: #9a8b7a;
+  white-space: nowrap;
+}
+
+/* 到期或逾期：倒计时变红加粗 */
+.booking-item.urgent .booking-days {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+/* 操作按钮平时藏着，点预约条目才展开，主站保持干净 */
+.booking-actions {
+  display: none;
+  gap: 10px;
+  padding: 2px 0 8px;
+}
+
+.booking-item.open .booking-actions {
+  display: flex;
+}
+
+/* 两个操作按钮：小号胶囊，绿=完成，白底红字=删除 */
+.btn-booking-done {
+  border: none;
+  background: #2f9e44;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.btn-booking-del {
+  border: none;
+  background: #ffffff;
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.btn-booking-done:active,
+.btn-booking-del:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================
+   第十期 · PWA 开屏动画 + 右上角设置入口
+   ========================================================== */
+
+/* header 变成定位参照，右上角按钮才能贴边（不影响原来的居中排版） */
+.header {
+  position: relative;
+}
+
+/* 右上角开屏设置小圆钮，不抢标题的戏 */
+.splash-settings-btn {
+  position: absolute;
+  right: 0;
+  top: 20px;
+  border: none;
+  background: #fdeadd;
+  color: #b3552e;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---------- 开屏层：默认透明且不挡操作，加 .show 才浮现 ---------- */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999; /* 盖过所有弹窗 */
+  background: #f5872e; /* 默认橙色底，也是没传照片时的底色 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* 文字贴底部 */
+  padding-bottom: 10vh;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.splash-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 照片模式：整张图铺满屏幕，多出的部分裁掉不留黑边 */
+.splash-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 默认模式的四个字：白色大字 + 轻阴影保证压图上也看得清 */
+.splash-title {
+  position: relative;
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  text-shadow: 0 2px 12px rgba(59, 49, 40, 0.35);
+}
+
+/* ---------- 开屏照片槽位（设置弹窗里） ---------- */
+.splash-slots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 14px 0 4px;
+}
+
+.splash-slot {
+  width: 84px;
+  height: 112px; /* 竖版比例，手机开屏是竖着的 */
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 空槽：虚线框 + 加号，点击去选图 */
+.splash-slot.empty {
+  border: 2px dashed #d8c7b4;
+  color: #b3a08c;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.splash-slot.filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 缩略图右上角的删除小圆点 */
+.splash-slot-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border: none;
+  background: rgba(59, 49, 40, 0.65);
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
 }

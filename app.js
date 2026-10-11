@@ -26,6 +26,11 @@ let tickId = null;
 
 // 页面加载完成后：绑定按钮事件 + 渲染初始界面 + 连接云端
 document.addEventListener("DOMContentLoaded", () => {
+  // 第十期 PWA：注册后台缓存器（只在 https 生效；本地 file:// 双击打开时静默跳过）
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js");
+  }
+
   document.getElementById("btn-start").addEventListener("click", onMainClick);
   document.getElementById("btn-reset").addEventListener("click", onResetClick);
   document.getElementById("btn-close-modal").addEventListener("click", hideModal);
@@ -50,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTimer(0);
   renderStats();
   renderRecords();
+  initHealth();       // 第七期：健康手册的按钮绑定 + 初始列表
   restoreAiResult(); // 把上次 AI 分析的结论摆回卡片里
   initApp();
 });
@@ -70,6 +76,7 @@ async function initApp() {
       if (event === "PASSWORD_RECOVERY") openNewPassModal();
     });
     records = await fetchRecords(); // 把云端的历史记录拉下来
+    await loadHealthCloud();        // 第七期：健康手册的历史记录也拉下来
 
     renderStats();
     renderRecords();
@@ -227,14 +234,28 @@ function renderRecords() {
       li.classList.toggle("open");
     });
 
-    // 明细：当天的每条训练（时刻 + 安静多久），只有展开时才显示
+    // 明细：当天的每条训练（时刻 + 安静多久 + 删除），只有展开时才显示
     const details = document.createElement("ul");
     details.className = "day-details";
     g.items.forEach((r) => {
       const item = document.createElement("li");
-      item.innerHTML =
-        '<span class="record-time">' + formatClock(r.startTime) + "</span>" +
-        '<span class="record-duration">安静了 ' + formatDuration(r.durationSeconds) + "</span>";
+
+      const timeEl = document.createElement("span");
+      timeEl.className = "record-time";
+      timeEl.textContent = formatClock(r.startTime);
+
+      const durEl = document.createElement("span");
+      durEl.className = "record-duration";
+      durEl.textContent = "安静了 " + formatDuration(r.durationSeconds);
+
+      const del = document.createElement("button");
+      del.className = "record-del";
+      del.textContent = "✕";
+      del.addEventListener("click", () => onDeleteRecordClick(r));
+
+      item.appendChild(timeEl);
+      item.appendChild(durEl);
+      item.appendChild(del);
       details.appendChild(item);
     });
 
@@ -242,6 +263,25 @@ function renderRecords() {
     li.appendChild(details);
     listEl.appendChild(li);
   });
+}
+
+// 点明细里的 ✕：确认后先从列表移除，再删云端
+// 用对象引用删而不是 id：断网时新记录还没拿到云端编号（id 是空的），
+// 拿 id 删会把同样没编号的记录一起误删
+async function onDeleteRecordClick(record) {
+  if (!confirm("删掉这条训练记录？删了就找不回来")) return;
+  records = records.filter((r) => r !== record);
+  renderStats();   // 今日统计里可能正好有这条，跟着重算
+  renderRecords();
+
+  // id 为空 = 这条本来就没存上云端，删本地就够了
+  if (db && record.id) {
+    try {
+      await deleteRecordFromCloud(record.id);
+    } catch (e) {
+      showStatus("⚠️ 云端没删掉，刷新页面看看还在不在");
+    }
+  }
 }
 
 /* ---------- 3.5 豆米报告与复制（第五期） ---------- */

@@ -6,16 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>豆米小站 · 记录豆米的成长</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- 第十期 PWA：安卓 Chrome 靠 manifest 装成真 app；iPhone/iPad 靠 apple-touch-icon 出桌面图标 -->
+  <meta name="theme-color" content="#f5872e" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
 </head>
 <body>
   <div class="container">
 
     <!-- ===== 顶部导航栏 ===== -->
     <header class="header">
+      <!-- 第十期：右上角开屏设置入口（以后左上角留给宠物切换） -->
+      <button id="btn-open-splash" class="splash-settings-btn" aria-label="开屏设置">🖼️</button>
       <h1>🐕 豆米小站</h1>
       <p class="subtitle">记录豆米成长的每一个瞬间</p>
       <!-- 第三期会在这里加「登录/注册」按钮 -->
     </header>
+
+    <!-- 首页预约提醒条（第九期）：有预约才显示，内容由 health.js 画 -->
+    <div id="booking-bar" class="booking-bar hidden"></div>
 
     <!-- 云端状态提示条：显示连接情况，文字由 JS 控制 -->
     <div class="status-bar hidden" id="status-bar"></div>
@@ -78,13 +87,23 @@
       </div>
     </section>
 
-    <!-- ===== 板块二：驱虫记录（施工中占位） ===== -->
+    <!-- ===== 板块二：健康手册（第七期）===== -->
     <div class="module-header">
       <span class="module-tag">板块 02</span>
-      <h2>💊 驱虫记录</h2>
-      <p class="module-desc">记好每一次体内外驱虫的时间</p>
+      <h2>🩺 健康手册</h2>
+      <p class="module-desc">记好每一次驱虫和疫苗，备注写清细节</p>
     </div>
-    <div class="coming-card">🚧 施工中，分离焦虑训练做完就轮到它</div>
+    <!-- 健康记录卡片：标题 + 记一笔按钮 + 列表（列表内容由 health.js 画） -->
+    <section class="health-card">
+      <div class="records-head">
+        <h2>驱虫 & 疫苗记录</h2>
+        <div class="head-actions">
+          <button id="btn-add-booking" class="btn-mini">⏰ 预约</button>
+          <button id="btn-add-health" class="btn-mini">＋ 记一笔</button>
+        </div>
+      </div>
+      <ul id="health-list"></ul>
+    </section>
 
     <!-- ===== 板块三：规划中占位 ===== -->
     <div class="module-header">
@@ -184,11 +203,78 @@
     </div>
   </div>
 
+  <!-- ===== 健康记录弹窗（第七期）：记一笔驱虫/疫苗 ===== -->
+  <div class="modal-overlay" id="health-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">🩺</div>
+      <p class="modal-title">记一笔健康记录</p>
+      <p class="auth-desc">驱虫、疫苗都记这里，备注可以写剂量和医生叮嘱</p>
+      <!-- 类型选择：原生圆点藏起来，把文字做成胶囊按钮，选中高亮 -->
+      <div class="health-type-row">
+        <label><input type="radio" name="health-type" value="deworm" checked /><span>🐛 驱虫</span></label>
+        <label><input type="radio" name="health-type" value="vaccine" /><span>💉 疫苗</span></label>
+      </div>
+      <input type="text" id="health-name" class="input" placeholder="名称，如：福来恩体外驱虫 / 狂犬疫苗" maxlength="50" />
+      <p class="field-label">哪天做的</p>
+      <input type="date" id="health-date" class="input" />
+      <textarea id="health-note" class="input" rows="2" maxlength="200" placeholder="备注（可不填）：剂量、反应、医生叮嘱……"></textarea>
+      <p class="auth-error" id="health-error"></p>
+      <div class="auth-buttons">
+        <button id="btn-save-health" class="btn btn-main">保存</button>
+      </div>
+      <button id="btn-close-health" class="btn-link">取消</button>
+    </div>
+  </div>
+
+  <!-- ===== 预约弹窗（第九期）：约一次未来的驱虫/疫苗，和已做记录分开 ===== -->
+  <div class="modal-overlay" id="booking-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">⏰</div>
+      <p class="modal-title">预约驱虫 / 疫苗</p>
+      <p class="auth-desc">约好日子，首页顶部会倒数提醒；做完点「已完成」会自动变成一条记录</p>
+      <div class="health-type-row">
+        <label><input type="radio" name="booking-type" value="deworm" checked /><span>🐛 驱虫</span></label>
+        <label><input type="radio" name="booking-type" value="vaccine" /><span>💉 疫苗</span></label>
+      </div>
+      <input type="text" id="booking-name" class="input" placeholder="名称，如：狂犬疫苗年针 / 体外驱虫" maxlength="50" />
+      <p class="field-label">预约哪天（不能是昨天及之前）</p>
+      <input type="date" id="booking-date" class="input" />
+      <textarea id="booking-note" class="input" rows="2" maxlength="200" placeholder="备注（可不填）：医院、医生、带什么……"></textarea>
+      <p class="auth-error" id="booking-error"></p>
+      <div class="auth-buttons">
+        <button id="btn-save-booking" class="btn btn-main">保存预约</button>
+      </div>
+      <button id="btn-close-booking" class="btn-link">取消</button>
+    </div>
+  </div>
+
+  <!-- ===== 开屏动画层（第十期）：冷启动显示 1.5 秒，点击可跳过 ===== -->
+  <!-- 默认透明且不挡操作，splash.js 冷启动时给它加 .show 才浮现 -->
+  <div class="splash-overlay" id="splash-overlay">
+    <img id="splash-img" class="splash-img hidden" alt="" />
+    <p id="splash-title" class="splash-title">豆米小家</p>
+  </div>
+
+  <!-- ===== 开屏照片设置弹窗（第十期）：最多 3 张，存浏览器本地 ===== -->
+  <div class="modal-overlay" id="splash-modal">
+    <div class="modal-box">
+      <div class="modal-emoji">🖼️</div>
+      <p class="modal-title">开屏动画设置</p>
+      <p class="auth-desc">最多放 3 张照片，重新打开小站时随机抽一张展示 1.5 秒；不放就显示橙色底的「豆米小家」</p>
+      <div id="splash-slots" class="splash-slots"></div>
+      <input type="file" id="splash-file" accept="image/*" multiple class="hidden" />
+      <p class="auth-error" id="splash-error"></p>
+      <button id="btn-close-splash" class="btn-link">完成</button>
+    </div>
+  </div>
+
   <!-- Supabase 官方网页版库：CDN 引入，不用安装任何东西 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- 我们自己的文件，顺序不能乱：配置 → 云端逻辑 → 界面逻辑 -->
+  <!-- 我们自己的文件，顺序不能乱：配置 → 云端逻辑 → 健康手册界面 → 开屏动画 → 主界面逻辑 -->
   <script src="config.js"></script>
   <script src="cloud.js"></script>
+  <script src="health.js"></script>
+  <script src="splash.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
