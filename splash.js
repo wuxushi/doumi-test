@@ -16,6 +16,14 @@ const SPLASH_SHOWN_KEY = "doumi_splash_shown";
 // 开屏最多几张照片
 const SPLASH_MAX = 3;
 
+// ---------- 桌面图标（第十期补充，声明必须放在 initSplash() 调用之前） ----------
+// 自定义图标的存储钥匙：值 { data }，data 是 512x512 PNG 的 base64
+const APP_ICON_KEY = "doumi_app_icon";
+// 动态 manifest 的 blob 地址（换图/删图时回收旧的，防内存泄漏）
+let dynamicIconUrl = null;
+// 静态 manifest.json 的原始地址（删掉自定义图标后还原回去用）
+let originalManifestHref = null;
+
 // 读照片列表（没有存过 / 内容坏了，都当空数组处理）
 function loadSplashPhotos() {
   try {
@@ -37,7 +45,12 @@ function initSplash() {
   document.getElementById("btn-open-splash").addEventListener("click", openSplashModal);
   document.getElementById("btn-close-splash").addEventListener("click", closeSplashModal);
   document.getElementById("splash-file").addEventListener("change", onSplashFilePicked);
+  document.getElementById("icon-file").addEventListener("change", onIconFilePicked);
+  // 图标槽的点击用 onclick 赋值：renderIconSlot 会反复重画槽内元素，赋值法天然不会重复绑定
+  document.getElementById("icon-slot").onclick = () => document.getElementById("icon-file").click();
   renderSplashSlots();
+  renderIconSlot();
+  applyDynamicManifest(); // 有自定义图标就趁早换掉 manifest，让 Chrome 首次抓取就拿到动态版
   showSplashOnce();
 }
 
@@ -183,4 +196,142 @@ async function onSplashFilePicked(event) {
     errEl.textContent = "浏览器存满了，删掉一两张再试";
   }
   renderSplashSlots();
+}
+
+/* ---------- 6. 桌面图标自定义（第十期补充，存储钥匙等声明在文件顶部） ---------- */
+
+function loadAppIcon() {
+  try {
+    const icon = JSON.parse(localStorage.getItem(APP_ICON_KEY));
+    return icon && icon.data ? icon : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveAppIcon(icon) {
+  localStorage.setItem(APP_ICON_KEY, JSON.stringify(icon));
+}
+
+function removeAppIcon() {
+  localStorage.removeItem(APP_ICON_KEY);
+}
+
+// 中心正方形裁剪 + 缩到 512x512 PNG：桌面图标的标准规格
+// 和开屏的 compressImage 分开写：图标要裁方、要 PNG；开屏要保比例、要 JPEG
+function compressSquareIcon(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const side = Math.min(img.width, img.height); // 中心最大的正方形
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 512;
+        canvas.getContext("2d").drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+        resolve({ data: canvas.toDataURL("image/png") });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// 把 manifest 换成「带自定义图标」的动态版，Chrome 安装时读的就是它。
+// 关键点：动态 manifest 里不能用相对路径（blob 地址没有「文件夹」的概念），
+// 所以所有地址都用 new URL 换成完整网址
+function applyDynamicManifest() {
+  const link = document.querySelector('link[rel="manifest"]');
+  if (originalManifestHref === null) originalManifestHref = link.href;
+
+  if (dynamicIconUrl) {
+    URL.revokeObjectURL(dynamicIconUrl); // 回收上一版，防内存泄漏
+    dynamicIconUrl = null;
+  }
+
+  const icon = loadAppIcon();
+  if (!icon) {
+    link.href = originalManifestHref; // 没有自定义图标 = 还原成静态 manifest.json
+    return;
+  }
+
+  const manifest = {
+    name: "豆米小站",
+    short_name: "豆米小站",
+    description: "记录狗狗豆米的分离焦虑训练和健康成长",
+    start_url: new URL("./index.html", location.href).href,
+    scope: new URL("./", location.href).href,
+    display: "standalone",
+    background_color: "#f5872e",
+    theme_color: "#f5872e",
+    icons: [
+      { src: icon.data, sizes: "512x512", type: "image/png" },
+      { src: new URL("./icons/icon-192.png", location.href).href, sizes: "192x192", type: "image/png" },
+      {
+        src: new URL("./icons/icon-512.png", location.href).href,
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any maskable",
+      },
+    ],
+  };
+  dynamicIconUrl = URL.createObjectURL(
+    new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" })
+  );
+  link.href = dynamicIconUrl;
+
+  // iPhone 尽力而为：iOS 不一定认 base64 的触摸图标，不认就回退网页截图，无害
+  const touch = document.querySelector('link[rel="apple-touch-icon"]');
+  if (touch) touch.href = icon.data;
+}
+
+// 画图标槽：有图显示预览 + ✕，没图显示虚线 ＋
+function renderIconSlot() {
+  const slot = document.getElementById("icon-slot");
+  const icon = loadAppIcon();
+  slot.innerHTML = "";
+
+  if (icon) {
+    slot.className = "icon-slot filled";
+    const img = document.createElement("img");
+    img.src = icon.data;
+    img.alt = "自定义桌面图标";
+    const del = document.createElement("button");
+    del.className = "splash-slot-del";
+    del.textContent = "✕";
+    del.addEventListener("click", (e) => {
+      e.stopPropagation(); // 别让点击传给槽位，不然又弹选图框
+      if (!confirm("恢复默认橙色图标？卸载重装 PWA 后生效")) return;
+      removeAppIcon();
+      renderIconSlot();
+      applyDynamicManifest();
+    });
+    slot.appendChild(img);
+    slot.appendChild(del);
+  } else {
+    slot.className = "icon-slot empty";
+    slot.textContent = "＋";
+  }
+}
+
+// 选完图标：裁剪压缩入库 → manifest 换成动态版 → 重画槽位
+async function onIconFilePicked(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = ""; // 清掉选择记录，下次选同一张也能触发
+  if (!file) return;
+
+  const errEl = document.getElementById("splash-error");
+  try {
+    saveAppIcon(await compressSquareIcon(file));
+    applyDynamicManifest();
+    renderIconSlot();
+    errEl.textContent = "";
+  } catch (e) {
+    errEl.textContent = "图标没读出来，换一张试试";
+  }
 }

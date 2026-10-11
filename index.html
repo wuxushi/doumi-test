@@ -259,10 +259,16 @@
   <div class="modal-overlay" id="splash-modal">
     <div class="modal-box">
       <div class="modal-emoji">🖼️</div>
-      <p class="modal-title">开屏动画设置</p>
+      <p class="modal-title">开屏 & 图标设置</p>
       <p class="auth-desc">最多放 3 张照片，重新打开小站时随机抽一张展示 1.5 秒；不放就显示橙色底的「豆米小家」</p>
       <div id="splash-slots" class="splash-slots"></div>
-      <input type="file" id="splash-file" accept="image/*" multiple class="hidden" />
+      <!-- 桌面图标：换图后要卸载重装 PWA 才生效（Chrome 的机制） -->
+      <p class="field-label">桌面图标（安卓 Chrome 生效；换图后需卸载重装 PWA）</p>
+      <div class="icon-row">
+        <div id="icon-slot" class="icon-slot empty" title="点击更换桌面图标"></div>
+        <p class="icon-hint">上传一张图当桌面图标，非正方形会自动裁中间；iPhone 可能不认，会退回网页截图当图标</p>
+      </div>
+      <input type="file" id="icon-file" accept="image/*" class="hidden" />
       <p class="auth-error" id="splash-error"></p>
       <button id="btn-close-splash" class="btn-link">完成</button>
     </div>

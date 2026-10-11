@@ -874,3 +874,45 @@ body {
   line-height: 1;
   cursor: pointer;
 }
+
+/* ---------- 桌面图标槽（设置弹窗里） ---------- */
+.icon-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 8px 0 4px;
+  text-align: left;
+}
+
+/* 图标槽：方圆角，模拟手机桌面图标的样子 */
+.icon-slot {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0; /* 右边提示文字再长也不把图标挤扁 */
+  cursor: pointer;
+}
+
+.icon-slot.empty {
+  border: 2px dashed #d8c7b4;
+  color: #b3a08c;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-slot.filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.icon-hint {
+  font-size: 12px;
+  color: #9a8b7a;
+  line-height: 1.5;
+}
